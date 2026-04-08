@@ -8,5 +8,6 @@ class Settings:
     # This defaults to a local MongoDB instance
     MONGO_URL: str = os.getenv("MONGO_URL", "mongodb://localhost:27017")
     DATABASE_NAME: str = "buchi_db"
+    RESCUE_GROUPS_API_KEY: str = os.getenv("RESCUE_GROUPS_API_KEY")
 
 settings = Settings()
