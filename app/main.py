@@ -1,8 +1,8 @@
 # app/main.py
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from app.core.database import connect_to_mongo, close_mongo_connection
-from app.api import pets
+from app.core.database import connect_to_mongo, close_mongo_connection 
+from app.api import pets , customers , adoptions
 
 
 # This lifecycle manager handles connecting/disconnecting from the DB
@@ -21,7 +21,8 @@ app = FastAPI(
 )
 
 app.include_router(pets.router)
-
+app.include_router(customers.router)
+app.include_router(adoptions.router)
 
 @app.get("/")
 async def root():
