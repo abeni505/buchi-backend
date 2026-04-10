@@ -9,7 +9,9 @@ import uuid
 router = APIRouter()
 
 
-@router.post("/create_pet", status_code=201)
+@router.post(
+    "/create_pet", tags=["Pets"], summary="Create a Local Pet", status_code=201
+)
 async def create_pet(pet: PetCreate):
     # Convert the Pydantic model to a dictionary
     pet_dict = pet.model_dump()
@@ -135,7 +137,7 @@ async def get_pets(
 
 
 # GET PET DETAILS ENDPOINT:
-@router.get("/get_pets/{pet_id}")
+@router.get("/get_pets/{pet_id}", tags=["Pets"], summary="Get Pet Details")
 async def get_pet_details(pet_id: str):
     """Fetch the full details of a single pet by ID."""
 

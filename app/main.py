@@ -16,14 +16,15 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Buchi Pet Adoption API",
     description="""
-    Welcome to the Buchi Pet Adoption System API.
-    
-    This API allows shelter administrators and frontend applications to:
-    * **Manage Customers:** Register new adopters.
-    * **Search Pets:** Filter through local and external shelter databases.
-    * **Process Adoptions:** Securely link customers to pets.
-    * **Generate Reports:** View statistical adoption data.
-    """,
+    ## Welcome to the Buchi Pet Adoption System API 🐾
+
+This API provides a robust backend for managing a pet adoption ecosystem, integrating both **local MongoDB storage** and the **RescueGroups external API**.
+
+### Core Features:
+* 👤 **Manage Customers:** Seamlessly register and track potential adopters.
+* 🐕 **Search Pets:** Advanced filtering across hybrid databases (Local + RescueGroups).
+* 💍 **Process Adoptions:** Securely link customers to their new companions.
+* 📊 **Generate Reports:** Access data-driven insights on adoption trends. """,
     version="1.0.0",
 )
 
