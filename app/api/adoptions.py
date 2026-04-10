@@ -4,7 +4,7 @@ from app.schemas.relations import AdoptionCreate
 from app.core.database import db
 from app.services.rescuegroups import get_external_pet_by_id
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 router = APIRouter()
 
@@ -55,7 +55,7 @@ async def adopt(adoption: AdoptionCreate):
         "size": pet_size,
         "age": pet_age,
         "good_with_children": good_with_children,
-        "request_date": datetime.utcnow(),
+        "request_date": datetime.now(timezone.utc),
     }
 
     await db.client.buchi_db.adoptions.insert_one(record)
