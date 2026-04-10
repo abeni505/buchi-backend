@@ -58,8 +58,20 @@ Execute Pytest to run the full end-to-end integration and negative test suite:
 python -m pytest
 ```
 
+## 🚀 Live Deployment
 
+The Buchi Pet Adoption API is containerized with Docker and deployed on Render. 
 
+* **Live API Documentation:** [https://buchi-backend.onrender.com/docs](https://buchi-backend.onrender.com/docs)
+
+---
+
+## 🛠️ Tech Stack
+* **Backend:** FastAPI (Python 3.12)
+* **Database:** MongoDB Atlas (NoSQL)
+* **Containerization:** Docker & Docker Compose
+* **Deployment:** Render
+
+---
 # ‍💻 Author
-
 Abenezer M. Woldesenbet 
