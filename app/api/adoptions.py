@@ -96,16 +96,16 @@ async def get_adoption_requests(
     for r in adoptions:
         formatted_data.append(
             {
-                "customer_id": r["customer_id"],
-                "customer_name": r["customer"].get("name"),
-                "customer_phone": r["customer"].get("phone"),
-                "pet_name": r["pet"].get("pet_name"),
-                "pet_id": r["pet_id"],
-                "type": r["pet"].get("type"),
-                "gender": r["pet"].get("gender"),
-                "size": r["pet"].get("size"),
-                "age": r["pet"].get("age"),
-                "good_with_children": r["pet"].get("good_with_children", False),
+                "customer_id": r.get("customer_id"),
+                "customer_name": r.get("customer_name", "Unknown"),
+                "customer_phone": r.get("customer_phone", "Unknown"),
+                "pet_id": r.get("pet_id"),
+                "pet_name": r.get("pet_name", "Unknown"),
+                "type": r.get("type", "Unknown"),
+                "gender": r.get("gender", "Unknown"),
+                "size": r.get("size", "Unknown"),
+                "age": r.get("age", "Unknown"),
+                "good_with_children": r.get("good_with_children", False),
             }
         )
 
@@ -122,10 +122,8 @@ async def generate_report(request: ReportRequest):
 
     # Convert date to datetime for MongoDB comparison
     # from_dt starts at 00:00:00
-    from_dt = datetime.combine(request.start_date, time.min)
-    # to_dt ends at 23:59:59
-    to_dt = datetime.combine(request.end_date, time.max)
-
+    from_dt = datetime.combine(request.from_date, time.min)
+    to_dt = datetime.combine(request.to_date, time.max)
     # Fetch all records within the date range
     cursor = db.client.buchi_db.adoptions.find(
         {"request_date": {"$gte": from_dt, "$lte": to_dt}}
