@@ -1,6 +1,11 @@
 # app/api/adoptions.py
 from fastapi import APIRouter, HTTPException, Query
-from app.schemas.relations import AdoptionCreate, AdoptionResponse
+from app.schemas.relations import (
+    AdoptionCreate,
+    AdoptionResponse,
+    AdoptionListResponse,
+    ReportResponse,
+)
 from app.core.database import db
 from app.services.rescuegroups import get_external_pet_by_id
 import uuid
@@ -70,7 +75,70 @@ async def adopt(adoption: AdoptionCreate):
 
 
 @router.get(
+    "/get_adoption_requests", response_model=AdoptionListResponse, tags=["Adoptions"]
+)
+async def get_adoption_requests(
+    from_date: date = Query(..., examples=["2026-04-01"]),
+    to_date: date = Query(..., examples=["2026-04-10"]),
+):
+    # Convert to datetime objects for MongoDB range queries
+    from_dt = datetime.combine(from_date, time.min)
+    to_dt = datetime.combine(to_date, time.max)
+
+    pipeline = [
+        # 1. Filter by date range
+        {"$match": {"request_date": {"$gte": from_dt, "$lte": to_dt}}},
+        # 2. Sort by date: 1 = Ascending (Oldest first/top)
+        {"$sort": {"request_date": 1}},
+        # 3. Join with Customers
+        {
+            "$lookup": {
+                "from": "customers",
+                "localField": "customer_id",
+                "foreignField": "customer_id",
+                "as": "customer",
+            }
+        },
+        # 4. Join with Pets
+        {
+            "$lookup": {
+                "from": "pets",
+                "localField": "pet_id",
+                "foreignField": "pet_id",
+                "as": "pet",
+            }
+        },
+        # 5. Flatten the arrays created by lookup
+        {"$unwind": "$customer"},
+        {"$unwind": "$pet"},
+    ]
+
+    cursor = db.client.buchi_db.adoptions.aggregate(pipeline)
+    adoptions = await cursor.to_list(length=1000)
+
+    formatted_data = []
+    for r in adoptions:
+        formatted_data.append(
+            {
+                "customer_id": r["customer_id"],
+                "customer_name": r["customer"].get("name"),
+                "customer_phone": r["customer"].get("phone"),
+                "pet_name": r["pet"].get("pet_name"),
+                "pet_id": r["pet_id"],
+                "type": r["pet"].get("type"),
+                "gender": r["pet"].get("gender"),
+                "size": r["pet"].get("size"),
+                "age": r["pet"].get("age"),
+                "good_with_children": r["pet"].get("good_with_children", False),
+            }
+        )
+
+    return {"status": "success", "data": formatted_data}
+
+
+@router.get(
     "/get_adoption_report",
+    response_model=ReportResponse,
     tags=["Adoptions"],
     summary="Get Adoption Statistics Report",
 )
