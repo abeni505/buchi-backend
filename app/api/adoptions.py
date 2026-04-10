@@ -1,10 +1,10 @@
 # app/api/adoptions.py
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from app.schemas.relations import AdoptionCreate, AdoptionResponse
 from app.core.database import db
 from app.services.rescuegroups import get_external_pet_by_id
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone, time
 
 router = APIRouter()
 
@@ -74,18 +74,24 @@ async def adopt(adoption: AdoptionCreate):
     tags=["Adoptions"],
     summary="Get Adoption Statistics Report",
 )
-async def get_adoption_report(from_date: str, to_date: str):
+async def get_adoption_report(
+    start_date: date = Query(
+        ...,
+        description="The start date for the report in YYYY-MM-DD format",
+        example="2026-01-01",  # This shows up in Swagger!
+    ),
+    end_date: date = Query(
+        ...,
+        description="The end date for the report in YYYY-MM-DD format",
+        example="2026-04-10",
+    ),
+):
 
-    # Parse the date strings
-    try:
-        from_dt = datetime.strptime(from_date, "%Y-%m-%d")
-        # Add hours to 'to_date' to include the entire final day in the search
-        to_dt = datetime.strptime(to_date + " 23:59:59", "%Y-%m-%d %H:%M:%S")
-
-    except ValueError:
-        raise HTTPException(
-            status_code=400, detail="Invalid date format. Use YYYY-MM-DD"
-        )
+    # Convert date to datetime for MongoDB comparison
+    # from_dt starts at 00:00:00
+    from_dt = datetime.combine(start_date, time.min)
+    # to_dt ends at 23:59:59
+    to_dt = datetime.combine(end_date, time.max)
 
     # Fetch all records within the date range
     cursor = db.client.buchi_db.adoptions.find(
@@ -117,7 +123,9 @@ async def get_adoption_report(from_date: str, to_date: str):
     return {
         "status": "success",
         "data": {
+            "report_period": {"from": from_dt, "to": to_dt},
             "adopted_pet_types": adopted_pet_types,
             "weekly_adoption_requests": weekly_adoption_requests,
+            "total_requests": len(records),
         },
     }
