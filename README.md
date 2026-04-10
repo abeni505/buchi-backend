@@ -75,3 +75,13 @@ The Buchi Pet Adoption API is containerized with Docker and deployed on Render.
 ---
 # ‍💻 Author
 Abenezer M. Woldesenbet 
+
+
+
+[![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)](https://www.python.org/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+[![Render](https://img.shields.io/badge/Render-%23430098.svg?style=for-the-badge&logo=render&logoColor=white)](https://render.com/)
+[![Python CI](https://github.com/abeni505/buchi-backend/actions/workflows/main.yml/badge.svg)](https://github.com/abeni505/buchi-backend/actions/workflows/main.yml)
+[![Render Status](https://img.shields.io/badge/Render-Live-brightgreen?logo=render&style=for-the-badge)](https://render.com/deploy?service=srv-d7cjbbv7f7vs73f654tg)
