@@ -1,13 +1,19 @@
 # app/api/customers.py
 from fastapi import APIRouter
-from app.schemas.relations import CustomerCreate
+from app.schemas.relations import CustomerCreate, CustomerResponse
 from app.core.database import db
 import uuid
 
 router = APIRouter()
 
 
-@router.post("/add_customer", status_code=201)
+@router.post(
+    "/add_customer", 
+    response_model=CustomerResponse, 
+    status_code=201,
+    tags=["Customers"],
+    summary="Register a New Customer"
+)
 async def add_customer(customer: CustomerCreate):
     # 1. Check if the phone number already exists in the database
     existing_customer = await db.client.buchi_db.customers.find_one(
@@ -28,7 +34,11 @@ async def add_customer(customer: CustomerCreate):
     return {"status": "success", "customer_id": customer_id}
 
 
-@router.get("/get_customers")
+@router.get(
+    "/get_customers", 
+    tags=["Customers"],
+    summary="List All Customers"
+)
 async def get_customers(limit: int = 50):
     """Admin endpoint to view all registered customers."""
     cursor = db.client.buchi_db.customers.find({}).limit(limit)

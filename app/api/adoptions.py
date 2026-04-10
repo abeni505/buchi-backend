@@ -1,6 +1,6 @@
 # app/api/adoptions.py
 from fastapi import APIRouter, HTTPException
-from app.schemas.relations import AdoptionCreate
+from app.schemas.relations import AdoptionCreate, AdoptionResponse
 from app.core.database import db
 from app.services.rescuegroups import get_external_pet_by_id
 import uuid
@@ -9,7 +9,13 @@ from datetime import datetime, timedelta, timezone
 router = APIRouter()
 
 
-@router.post("/adopt", status_code=201)
+@router.post(
+    "/adopt",
+    response_model=AdoptionResponse,
+    status_code=201,
+    tags=["Adoptions"],
+    summary="Submit an Adoption Request",
+)
 async def adopt(adoption: AdoptionCreate):
     # 1. Verify the Customer exists locally
     customer = await db.client.buchi_db.customers.find_one(
@@ -63,7 +69,11 @@ async def adopt(adoption: AdoptionCreate):
     return {"status": "success", "adoption_id": adoption_id}
 
 
-@router.get("/get_adoption_requests")
+@router.get(
+    "/get_adoption_requests",
+    tags=["Adoptions"],
+    summary="Get Adoption Statistics Report",
+)
 async def get_adoption_requests(from_date: str, to_date: str):
 
     # Parse the date strings

@@ -26,15 +26,28 @@ async def create_pet(pet: PetCreate):
 
 
 # GET_PETS ENDPOINT:
-@router.get("/get_pets")
+@router.get(
+    "/get_pets",
+    tags=["Pets"],
+    summary="Search and Filter Pets",
+    description="Fetch a list of pets. This endpoint searches the local Buchi database first. If the limit is not reached, it seamlessly fetches remaining pets from the external RescueGroups API.",
+)
 async def get_pets(
-    limit: int = Query(..., description="Required limit of results"),
-    type: List[str] = Query(None, description="Multiple types allowed"),
-    gender: List[str] = Query(None, description="Multiple genders allowed"),
-    size: List[str] = Query(None, description="Multiple sizes allowed"),
-    age: List[str] = Query(None, description="Multiple ages allowed"),
+    limit: int = Query(..., description="Maximum number of pets to return (e.g., 10)"),
+    type: List[str] = Query(
+        None,
+        description="Filter by species. Send multiple times for multiple types (e.g., ?type=Dog&type=Cat)",
+    ),
+    gender: List[str] = Query(None, description="Filter by gender (Male, Female)"),
+    size: List[str] = Query(
+        None, description="Filter by size (Small, Medium, Large, XLarge)"
+    ),
+    age: List[str] = Query(
+        None, description="Filter by age (Baby, Young, Adult, Senior)"
+    ),
     good_with_children: Optional[bool] = None,
 ):
+
     # Build the dynamic search query for our local database
     local_query = {}
     if type:
