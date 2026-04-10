@@ -45,6 +45,7 @@ class AdoptionListEntry(BaseModel):
     customer_name: str
     customer_phone: str
     pet_id: str
+    pet_name: str
     type: str
     gender: str
     size: str
