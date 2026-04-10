@@ -1,10 +1,11 @@
 # app/api/adoptions.py
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Body
 from app.schemas.relations import (
     AdoptionCreate,
     AdoptionResponse,
     AdoptionListResponse,
     ReportResponse,
+    ReportRequest,
 )
 from app.core.database import db
 from app.services.rescuegroups import get_external_pet_by_id
@@ -48,6 +49,7 @@ async def adopt(adoption: AdoptionCreate):
 
         attr = external_pet.get("attributes", {})
         pet_type = attr.get("speciesString")
+        pet_name = attr.get("name")
         pet_gender = attr.get("sex")
         pet_size = attr.get("sizeGroup")
         pet_age = attr.get("ageGroup")
@@ -60,6 +62,7 @@ async def adopt(adoption: AdoptionCreate):
         "customer_id": customer["customer_id"],
         "customer_name": customer["name"],
         "customer_phone": customer["phone"],
+        "pet_name": pet_name,
         "pet_id": adoption.pet_id,
         "type": pet_type,
         "gender": pet_gender,
@@ -78,12 +81,21 @@ async def adopt(adoption: AdoptionCreate):
     "/get_adoption_requests", response_model=AdoptionListResponse, tags=["Adoptions"]
 )
 async def get_adoption_requests(
-    from_date: date = Query(..., examples=["2026-04-01"]),
-    to_date: date = Query(..., examples=["2026-04-10"]),
+    start_date: date = Query(
+        ...,
+        description="The start date for the report in YYYY-MM-DD format",
+        example="2026-01-01",  # This shows up in Swagger!
+    ),
+    end_date: date = Query(
+        ...,
+        description="The end date for the report in YYYY-MM-DD format",
+        example="2026-04-10",
+    ),
 ):
     # Convert to datetime objects for MongoDB range queries
-    from_dt = datetime.combine(from_date, time.min)
-    to_dt = datetime.combine(to_date, time.max)
+    from_dt = datetime.combine(start_date, time.min)
+    # to_dt ends at 23:59:59
+    to_dt = datetime.combine(end_date, time.max)
 
     pipeline = [
         # 1. Filter by date range
@@ -136,13 +148,13 @@ async def get_adoption_requests(
     return {"status": "success", "data": formatted_data}
 
 
-@router.get(
-    "/get_adoption_report",
+@router.post(
+    "/generate_report",
     response_model=ReportResponse,
     tags=["Adoptions"],
     summary="Get Adoption Statistics Report",
 )
-async def get_adoption_report(
+async def generate_report(
     start_date: date = Query(
         ...,
         description="The start date for the report in YYYY-MM-DD format",
