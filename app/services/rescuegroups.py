@@ -3,6 +3,7 @@ import httpx
 from typing import Dict, Any
 from app.core.config import settings
 
+
 async def fetch_external_pets(params: Dict[str, Any]) -> list:
     """
     Fetches pets from RescueGroups API v5 using dynamic filters.
@@ -16,37 +17,28 @@ async def fetch_external_pets(params: Dict[str, Any]) -> list:
     # 1. Translate Buchi parameters to RescueGroups filters
     filters = []
     if params.get("type"):
-        # RescueGroups expects "Dog" or "Cat" capitalized
+        # Capitalize all items in the list: ["dog", "cat"] -> ["Dog", "Cat"]
+        types = [t.capitalize() for t in params.get("type")]
         filters.append(
-            {
-                "fieldName": "species.singular",
-                "operation": "equals",
-                "criteria": params.get("type").capitalize(),
-            }
+            {"fieldName": "species.singular", "operation": "equals", "criteria": types}
         )
+
     if params.get("gender"):
+        genders = [g.capitalize() for g in params.get("gender")]
         filters.append(
-            {
-                "fieldName": "animals.sex",
-                "operation": "equals",
-                "criteria": params.get("gender").capitalize(),
-            }
+            {"fieldName": "animals.sex", "operation": "equals", "criteria": genders}
         )
+
     if params.get("size"):
+        sizes = [s.capitalize() for s in params.get("size")]
         filters.append(
-            {
-                "fieldName": "animals.sizeGroup",
-                "operation": "equals",
-                "criteria": params.get("size").capitalize(),
-            }
+            {"fieldName": "animals.sizeGroup", "operation": "equals", "criteria": sizes}
         )
+
     if params.get("age"):
+        ages = [a.capitalize() for a in params.get("age")]
         filters.append(
-            {
-                "fieldName": "animals.ageGroup",
-                "operation": "equals",
-                "criteria": params.get("age").capitalize(),
-            }
+            {"fieldName": "animals.ageGroup", "operation": "equals", "criteria": ages}
         )
 
     payload = {"data": {"filters": filters}}
@@ -69,6 +61,7 @@ async def fetch_external_pets(params: Dict[str, Any]) -> list:
     except Exception as e:
         print(f"RescueGroups API Error: {e}")
         return []
+
 
 async def get_external_pet_by_id(pet_id: str) -> dict:
     """Fetches a single pet by ID to verify it exists during adoption."""

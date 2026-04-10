@@ -1,6 +1,6 @@
 # app/api/pets.py
-from fastapi import APIRouter, Query
-from typing import Optional
+from fastapi import APIRouter, Query, HTTPException
+from typing import Optional, List
 from app.schemas.pet import PetCreate
 from app.core.database import db
 from app.services.rescuegroups import fetch_external_pets
@@ -29,27 +29,29 @@ async def create_pet(pet: PetCreate):
 @router.get("/get_pets")
 async def get_pets(
     limit: int = Query(..., description="Required limit of results"),
-    type: Optional[str] = None,
-    gender: Optional[str] = None,
-    size: Optional[str] = None,
-    age: Optional[str] = None,
+    type: List[str] = Query(None, description="Multiple types allowed"),
+    gender: List[str] = Query(None, description="Multiple genders allowed"),
+    size: List[str] = Query(None, description="Multiple sizes allowed"),
+    age: List[str] = Query(None, description="Multiple ages allowed"),
     good_with_children: Optional[bool] = None,
 ):
     # Build the dynamic search query for our local database
-    query = {}
+    local_query = {}
     if type:
-        query["type"] = type
+        local_query["type"] = {"$in": type}
     if gender:
-        query["gender"] = gender
+        local_query["gender"] = {"$in": gender}
     if size:
-        query["size"] = size
+        local_query["size"] = {"$in": size}
     if age:
-        query["age"] = age
+        local_query["age"] = {"$in": age}
+
     if good_with_children is not None:
-        query["good_with_children"] = good_with_children
+        local_query["good_with_children"] = good_with_children
 
     # Fetch local pets FIRST (to prioritize them)
-    cursor = db.client.buchi_db.pets.find(query).limit(limit)
+    cursor = db.client.buchi_db.pets.find(local_query).limit(limit)
+
     local_pets = await cursor.to_list(length=limit)
 
     formatted_results = []
@@ -75,8 +77,13 @@ async def get_pets(
     # If we need more, call the RescueGroups API
     if remaining_limit > 0:
         # Pass the exact same search filters, but only ask for the remaining amount
-        external_params = query.copy()
-        external_params["limit"] = remaining_limit
+        external_params = {
+            "limit": remaining_limit,
+            "type": type,
+            "gender": gender,
+            "size": size,
+            "age": age,
+        }
 
         external_pets = await fetch_external_pets(external_params)
 
@@ -90,16 +97,21 @@ async def get_pets(
             if attr.get("pictureThumbnailUrl"):
                 photos.append(attr.get("pictureThumbnailUrl"))
 
+            fallback_type = type[0] if type else "Unknown"
+
+            pet_type = attr.get("speciesString") or fallback_type
+            pet_size = attr.get("sizeGroup") or "Unknown"
+            pet_age = attr.get("ageGroup") or "Unknown"
+            pet_gender = attr.get("sex") or "Unknown"
+
             formatted_results.append(
                 {
                     "pet_id": str(epet.get("id")),
-                    "source": "rescuegroups",  # Updated source tag
-                    "type": attr.get("speciesString")
-                    or external_params.get("type")
-                    or "Unknown",
-                    "gender": attr.get("sex"),
-                    "size": attr.get("sizeGroup"),
-                    "age": attr.get("ageGroup"),
+                    "source": "rescuegroups",
+                    "type": pet_type,
+                    "gender": pet_gender,
+                    "size": pet_size,
+                    "age": pet_age,
                     "good_with_children": attr.get("isGoodWithChildren", False),
                     "Photos": photos,
                 }
@@ -107,3 +119,56 @@ async def get_pets(
 
     # Return the perfectly combined list
     return {"status": "success", "pets": formatted_results}
+
+
+# GET PET DETAILS ENDPOINT:
+@router.get("/get_pets/{pet_id}")
+async def get_pet_details(pet_id: str):
+    """Fetch the full details of a single pet by ID."""
+
+    # Check if the pet is in our local database
+    local_pet = await db.client.buchi_db.pets.find_one({"pet_id": pet_id})
+
+    if local_pet:
+        return {
+            "status": "success",
+            "pet": {
+                "pet_id": local_pet["pet_id"],
+                "source": "local",
+                "type": local_pet.get("type"),
+                "gender": local_pet.get("gender"),
+                "size": local_pet.get("size"),
+                "age": local_pet.get("age"),
+                "good_with_children": local_pet.get("good_with_children", False),
+                "Photos": local_pet.get("Photo", []),
+            },
+        }
+
+    # If not found locally, check RescueGroups API
+    from app.services.rescuegroups import get_external_pet_by_id
+
+    external_pet = await get_external_pet_by_id(pet_id)
+
+    if external_pet:
+        attr = external_pet.get("attributes", {})
+
+        photos = []
+        if attr.get("pictureThumbnailUrl"):
+            photos.append(attr.get("pictureThumbnailUrl"))
+
+        return {
+            "status": "success",
+            "pet": {
+                "pet_id": str(external_pet.get("id")),
+                "source": "rescuegroups",
+                "type": attr.get("speciesString", "Unknown"),
+                "gender": attr.get("sex", "Unknown"),
+                "size": attr.get("sizeGroup", "Unknown"),
+                "age": attr.get("ageGroup", "Unknown"),
+                "good_with_children": attr.get("isGoodWithChildren", False),
+                "Photos": photos,
+            },
+        }
+
+    # If neither database has it, return a 404
+    raise HTTPException(status_code=404, detail="Pet not found")
