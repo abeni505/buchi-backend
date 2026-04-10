@@ -24,7 +24,7 @@ async def create_pet(pet: PetCreate):
     await db.client.buchi_db.pets.insert_one(pet_dict)
 
     # Return the required response format
-    return {"status": "success", "pet_id": pet_id}
+    return {"status": "success", "pet_id": pet_id, "pet_name": pet_dict.get("pet_name")}
 
 
 # GET_PETS ENDPOINT:
@@ -36,6 +36,9 @@ async def create_pet(pet: PetCreate):
 )
 async def get_pets(
     limit: int = Query(..., description="Maximum number of pets to return (e.g., 10)"),
+    pet_name: Optional[str] = Query(
+        None, description="Search pets by name (partial match)"
+    ),
     type: List[str] = Query(
         None,
         description="Filter by species. Send multiple times for multiple types (e.g., ?type=Dog&type=Cat)",
@@ -52,6 +55,10 @@ async def get_pets(
 
     # Build the dynamic search query for our local database
     local_query = {}
+
+    if pet_name:
+        # This matches if the pet name CONTAINS the search string, ignoring case
+        local_query["pet_name"] = {"$regex": pet_name, "$options": "i"}
     if type:
         local_query["type"] = {"$in": type}
     if gender:
@@ -77,6 +84,7 @@ async def get_pets(
             {
                 "pet_id": pet["pet_id"],
                 "source": "local",
+                "pet_name": pet.get("pet_name", "Unknown"),
                 "type": pet["type"],
                 "gender": pet["gender"],
                 "size": pet["size"],
@@ -94,6 +102,7 @@ async def get_pets(
         # Pass the exact same search filters, but only ask for the remaining amount
         external_params = {
             "limit": remaining_limit,
+            "pet_name": pet_name,
             "type": type,
             "gender": gender,
             "size": size,
@@ -123,6 +132,7 @@ async def get_pets(
                 {
                     "pet_id": str(epet.get("id")),
                     "source": "rescuegroups",
+                    "pet_name": attr.get("name", "Unknown Rescue Pet"),
                     "type": pet_type,
                     "gender": pet_gender,
                     "size": pet_size,
@@ -150,6 +160,7 @@ async def get_pet_details(pet_id: str):
             "pet": {
                 "pet_id": local_pet["pet_id"],
                 "source": "local",
+                "pet_name": local_pet.get("pet_name", "Unknown"),
                 "type": local_pet.get("type"),
                 "gender": local_pet.get("gender"),
                 "size": local_pet.get("size"),
@@ -176,6 +187,7 @@ async def get_pet_details(pet_id: str):
             "pet": {
                 "pet_id": str(external_pet.get("id")),
                 "source": "rescuegroups",
+                "pet_name": attr.get("name", "Unknown"),
                 "type": attr.get("speciesString", "Unknown"),
                 "gender": attr.get("sex", "Unknown"),
                 "size": attr.get("sizeGroup", "Unknown"),
