@@ -94,7 +94,9 @@ async def get_pets(
                 {
                     "pet_id": str(epet.get("id")),
                     "source": "rescuegroups",  # Updated source tag
-                    "type": attr.get("speciesString"),
+                    "type": attr.get("speciesString")
+                    or external_params.get("type")
+                    or "Unknown",
                     "gender": attr.get("sex"),
                     "size": attr.get("sizeGroup"),
                     "age": attr.get("ageGroup"),

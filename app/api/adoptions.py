@@ -1,5 +1,5 @@
 # app/api/adoptions.py
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException
 from app.schemas.relations import AdoptionCreate
 from app.core.database import db
 from app.services.rescuegroups import get_external_pet_by_id
