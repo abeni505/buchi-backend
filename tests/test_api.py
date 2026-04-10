@@ -36,7 +36,7 @@ def test_3_get_customers(client):
     """3. Test the admin customer list."""
     response = client.get("/get_customers")
     assert response.status_code == 200
-    assert type(response.json()["customers"]) == list
+    assert isinstance(response.json()["customers"], list)
 
 
 def test_4_create_pet(client):
@@ -62,7 +62,7 @@ def test_5_get_pets(mock_fetch, client):
     mock_fetch.return_value = []
     response = client.get("/get_pets?limit=10&type=Dog")
     assert response.status_code == 200
-    assert type(response.json()["pets"]) == list
+    assert isinstance(response.json()["pets"], list)
 
 
 def test_6_get_pet_details(client):

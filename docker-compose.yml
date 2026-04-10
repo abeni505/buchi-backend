@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      # We override the local Mongo URL so FastAPI knows to look for the Docker database
+      - MONGO_URL=mongodb://mongo:27017
+      # Pass your API key directly from your local .env file
+      - RESCUE_GROUPS_API_KEY=${RESCUE_GROUPS_API_KEY}
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:7.0
+    ports:
+      - "27017:27017"
+    volumes:
+      # This ensures the database data isn't deleted when the container shuts down
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:
