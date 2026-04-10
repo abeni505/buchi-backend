@@ -70,11 +70,11 @@ async def adopt(adoption: AdoptionCreate):
 
 
 @router.get(
-    "/get_adoption_requests",
+    "/get_adoption_report",
     tags=["Adoptions"],
     summary="Get Adoption Statistics Report",
 )
-async def get_adoption_requests(from_date: str, to_date: str):
+async def get_adoption_report(from_date: str, to_date: str):
 
     # Parse the date strings
     try:

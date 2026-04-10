@@ -6,7 +6,7 @@ class CustomerCreate(BaseModel):
     name: str = Field(
         ...,
         description="The full legal name of the adopter.",
-        examples=["Abenezer Woldesenbet"],
+        examples=["user1"],
     )
     phone: str = Field(
         ...,
@@ -29,7 +29,7 @@ class AdoptionCreate(BaseModel):
     pet_id: str = Field(
         ...,
         description="The ID of the pet (local UUID or RescueGroups integer).",
-        examples=["9999"],
+        examples=["123e4567-e89b-12d3-a456-426614174000"],
     )
 
 
