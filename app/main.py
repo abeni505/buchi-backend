@@ -26,6 +26,7 @@ This API provides a robust backend for managing a pet adoption ecosystem, integr
 * 💍 **Process Adoptions:** Securely link customers to their new companions.
 * 📊 **Generate Reports:** Access data-driven insights on adoption trends. """,
     version="1.0.0",
+    lifespan=lifespan,
 )
 
 app.include_router(pets.router)

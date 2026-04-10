@@ -16,9 +16,12 @@ db = Database()
 
 
 async def connect_to_mongo():
+    print("🚀 Attempting to connect to MongoDB...", flush=True)
     mongo_url = os.getenv("MONGO_URL")
     if not mongo_url:
-        print("❌ DB Error: MONGO_URL is missing from environment variables!")
+        print(
+            "❌ DB Error: MONGO_URL is missing from environment variables!", flush=True
+        )
         return
 
     try:
@@ -26,9 +29,9 @@ async def connect_to_mongo():
         db.client = AsyncIOMotorClient(mongo_url)
         # Verify connection
         await db.client.admin.command("ping")
-        print("✅ Successfully connected to MongoDB Atlas!")
+        print("✅ Successfully connected to MongoDB Atlas!", flush=True)
     except Exception as e:
-        print(f"❌ MongoDB Connection Failed: {e}")
+        print(f"❌ MongoDB Connection Failed: {e}", flush=True)
         db.client = None
 
 
