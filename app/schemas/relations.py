@@ -16,11 +16,8 @@ class CustomerCreate(BaseModel):
 
 
 class CustomerResponse(BaseModel):
-    customer_id: str = Field(
-        ..., description="The unique ID generated for the customer."
-    )
-    name: str
-    phone: str
+    status: str
+    customer_id: str
 
 
 class AdoptionCreate(BaseModel):
@@ -37,7 +34,5 @@ class AdoptionCreate(BaseModel):
 
 
 class AdoptionResponse(BaseModel):
-    adoption_id: str = Field(..., description="The unique ID for the adoption request.")
-    customer_id: str
-    pet_id: str
     status: str = Field("Pending", description="The current status of the adoption.")
+    adoption_id: str = Field(..., description="The unique ID for the adoption request.")
