@@ -84,11 +84,11 @@ async def get_pets(
             {
                 "pet_id": pet["pet_id"],
                 "source": "local",
-                "pet_name": pet.get("pet_name", "Unknown"),
-                "type": pet["type"],
-                "gender": pet["gender"],
-                "size": pet["size"],
-                "age": pet["age"],
+                "pet_name": pet.get("pet_name") or "Unknown",
+                "type": pet.get("type") or "Unknown",
+                "gender": pet.get("gender") or "Unknown",
+                "size": pet.get("size") or "Unknown",
+                "age": pet.get("age") or "Unknown",
                 "good_with_children": pet.get("good_with_children", False),
                 "Photos": pet.get("Photo", []),
             }
@@ -121,7 +121,7 @@ async def get_pets(
             if attr.get("pictureThumbnailUrl"):
                 photos.append(attr.get("pictureThumbnailUrl"))
 
-            fallback_type = type[0] if type else "Unknown"
+            fallback_type = type[0] if (type and isinstance(type, list)) else "Unknown"
 
             pet_type = attr.get("speciesString") or fallback_type
             pet_size = attr.get("sizeGroup") or "Unknown"
@@ -160,11 +160,11 @@ async def get_pet_details(pet_id: str):
             "pet": {
                 "pet_id": local_pet["pet_id"],
                 "source": "local",
-                "pet_name": local_pet.get("pet_name", "Unknown"),
-                "type": local_pet.get("type"),
-                "gender": local_pet.get("gender"),
-                "size": local_pet.get("size"),
-                "age": local_pet.get("age"),
+                "pet_name": local_pet.get("pet_name") or "Unknown",
+                "type": local_pet.get("type") or "Unknown",
+                "gender": local_pet.get("gender") or "Unknown",
+                "size": local_pet.get("size") or "Unknown",
+                "age": local_pet.get("age") or "Unknown",
                 "good_with_children": local_pet.get("good_with_children", False),
                 "Photos": local_pet.get("Photo", []),
             },
@@ -188,10 +188,10 @@ async def get_pet_details(pet_id: str):
                 "pet_id": str(external_pet.get("id")),
                 "source": "rescuegroups",
                 "pet_name": attr.get("name", "Unknown"),
-                "type": attr.get("speciesString", "Unknown"),
-                "gender": attr.get("sex", "Unknown"),
-                "size": attr.get("sizeGroup", "Unknown"),
-                "age": attr.get("ageGroup", "Unknown"),
+                "type": attr.get("speciesString") or "Unknown",
+                "gender": attr.get("sex") or "Unknown",
+                "size": attr.get("sizeGroup") or "Unknown",
+                "age": attr.get("ageGroup") or "Unknown",
                 "good_with_children": attr.get("isGoodWithChildren", False),
                 "Photos": photos,
             },
