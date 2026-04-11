@@ -35,6 +35,7 @@ async def adopt(adoption: AdoptionCreate):
 
     if pet:
         pet_type = pet.get("type")
+        pet_name = pet.get("pet_name")
         pet_gender = pet.get("gender")
         pet_size = pet.get("size")
         pet_age = pet.get("age")
@@ -97,15 +98,15 @@ async def get_adoption_requests(
         formatted_data.append(
             {
                 "customer_id": r.get("customer_id"),
-                "customer_name": r.get("customer_name", "Unknown"),
-                "customer_phone": r.get("customer_phone", "Unknown"),
+                "customer_name": r.get("customer_name") or "Unknown",
+                "customer_phone": r.get("customer_phone") or "Unknown",
                 "pet_id": r.get("pet_id"),
-                "pet_name": r.get("pet_name", "Unknown"),
-                "type": r.get("type", "Unknown"),
-                "gender": r.get("gender", "Unknown"),
-                "size": r.get("size", "Unknown"),
-                "age": r.get("age", "Unknown"),
-                "good_with_children": r.get("good_with_children", False),
+                "pet_name": r.get("pet_name") or "Unknown",
+                "type": r.get("type") or "Unknown",
+                "gender": r.get("gender") or "Unknown",
+                "size": r.get("size") or "Unknown",
+                "age": r.get("age") or "Unknown",
+                "good_with_children": r.get("good_with_children") or False,
             }
         )
 
