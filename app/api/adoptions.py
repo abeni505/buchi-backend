@@ -30,6 +30,16 @@ async def adopt(adoption: AdoptionCreate):
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
 
+    # Check if the pet is already adopted
+    existing_adoption = await db.client.buchi_db.adoptions.find_one(
+        {"pet_id": adoption.pet_id}
+    )
+    if existing_adoption:
+        raise HTTPException(
+            status_code=400,  # 400 means "Bad Request"
+            detail="Sorry, this pet has already been adopted!",
+        )
+
     # 2. Verify the Pet exists (Check local DB first)
     pet = await db.client.buchi_db.pets.find_one({"pet_id": adoption.pet_id})
 
